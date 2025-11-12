@@ -116,6 +116,6 @@ This project is licensed under the MIT License – see LICENSE for details.
 Ethan Buck  
 Computer Application Development Student  
 Email: ST10250745@vcconnect.edu.za
-GitHub: [https://github.com/EthannBuck/MunicipalityHelpSystem.git]
+GitHub: [https://github.com/EthannBuck/PROG7312PART3.git]
 
 
