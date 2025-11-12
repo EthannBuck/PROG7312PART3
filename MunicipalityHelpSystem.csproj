@@ -61,15 +61,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Event.cs" />
-    <Compile Include="EventRepository.cs" />
-    <Compile Include="Forms\Form1.cs">
+    <Compile Include="Services\DataStructures.cs" />
+    <Compile Include="Events\Event.cs" />
+    <Compile Include="Events\EventRepository.cs" />
+    <Compile Include="Forms\HomePage.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Forms\HomePage.Designer.cs">
+      <DependentUpon>HomePage.cs</DependentUpon>
     </Compile>
-    <Compile Include="IssueReport.cs" />
+    <Compile Include="Forms\ServiceRequestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ServiceRequestForm.Designer.cs">
+      <DependentUpon>ServiceRequestForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Issues\IssueReport.cs" />
     <Compile Include="Forms\LocalEventsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -84,14 +91,14 @@
     <Compile Include="Forms\ReportIssueForm.Designer.cs">
       <DependentUpon>ReportIssueForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\ServiceStatusForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\ServiceStatusForm.Designer.cs">
-      <DependentUpon>ServiceStatusForm.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Include="Forms\Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Services\ServiceRequest.cs" />
+    <Compile Include="Services\ServiceRepository.cs" />
+    <Compile Include="Services\ServiceRequestGraph.cs" />
+    <Compile Include="Services\ServiceRequestHeap.cs" />
+    <Compile Include="Services\ServiceRequestRedBlackTree.cs" />
+    <Compile Include="Services\ServiceRequestTree.cs" />
+    <EmbeddedResource Include="Forms\HomePage.resx">
+      <DependentUpon>HomePage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\LocalEventsForm.resx">
       <DependentUpon>LocalEventsForm.cs</DependentUpon>
@@ -107,9 +114,6 @@
     </Compile>
     <EmbeddedResource Include="Forms\ReportIssueForm.resx">
       <DependentUpon>ReportIssueForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ServiceStatusForm.resx">
-      <DependentUpon>ServiceStatusForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

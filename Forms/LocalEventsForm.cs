@@ -8,39 +8,71 @@ namespace WindowsFormApp1
 {
     public partial class LocalEventsForm : Form
     {
-        private Form1 parentForm;
+        private HomePage parentForm;
 
-        public LocalEventsForm(Form1 parent)
+        public LocalEventsForm(HomePage parent)
         {
             InitializeComponent();
             parentForm = parent;
+
+            // Hook up events here if not hooked in Designer
+            this.Load += LocalEventsForm_Load;
+            lstEvents.SelectedIndexChanged += lstEvents_SelectedIndexChanged;
+            btnSearch.Click += btnSearch_Click;
+            btnClearSearch.Click += btnClearSearch_Click;
+            btnSubmitEvent.Click += btnSubmitEvent_Click;
+            btnProcessSubmissions.Click += btnProcessSubmissions_Click;
         }
 
         private void LocalEventsForm_Load(object sender, EventArgs e)
         {
-            DisplayAllEvents();
+            this.Size = new Size(1200, 650);
+            this.StartPosition = FormStartPosition.CenterParent;
 
+            // Populate dropdowns
+            cmbCategory.Items.Clear();
             cmbCategory.Items.Add("All Categories");
             cmbCategory.Items.AddRange(EventRepository.Categories.ToArray());
             cmbCategory.SelectedIndex = 0;
 
+            cmbSortBy.Items.Clear();
             cmbSortBy.Items.AddRange(new string[] { "Date", "Category", "Title" });
             cmbSortBy.SelectedIndex = 0;
+
+            cmbSortOrder.Items.Clear();
             cmbSortOrder.Items.AddRange(new string[] { "Ascending", "Descending" });
             cmbSortOrder.SelectedIndex = 0;
 
-            chkUseDate.Checked = false;
+            // Initialize placeholders 
+            InitializePlaceholder(txtSearch, "Search events...");
+            InitializePlaceholder(txtNewTitle, "Enter event title...");
+            InitializePlaceholder(txtNewCategory, "Enter event category...");
+            InitializePlaceholder(txtNewDesc, "Enter event description...");
 
-            InitializeTextBoxPlaceholder(txtSearch, "Search event name...");
-            InitializeTextBoxPlaceholder(txtNewTitle, "Enter event title");
-            InitializeTextBoxPlaceholder(txtNewCategory, "Enter event category");
-            InitializeTextBoxPlaceholder(txtNewDesc, "Enter event description");
+            // Load initial data
+            DisplayAllEvents();
+            DisplayRecommendations();
+            DisplayLastViewed();
+            UpdateSubmissionQueueCount();
+
+            // Show/hide placeholder labels
+            txtSearch.TextChanged += (s, ev) => lblSearchHint.Visible = string.IsNullOrWhiteSpace(txtSearch.Text);
+            txtSearch.GotFocus += (s, ev) => lblSearchHint.Visible = false;
+            txtSearch.LostFocus += (s, ev) => lblSearchHint.Visible = string.IsNullOrWhiteSpace(txtSearch.Text);
+
+            txtNewTitle.TextChanged += (s, ev) => lblNewTitleHint.Visible = string.IsNullOrWhiteSpace(txtNewTitle.Text);
+            txtNewCategory.TextChanged += (s, ev) => lblNewCatHint.Visible = string.IsNullOrWhiteSpace(txtNewCategory.Text);
+            txtNewDesc.TextChanged += (s, ev) => lblNewDescHint.Visible = string.IsNullOrWhiteSpace(txtNewDesc.Text);
+
+            lblRecommendations.Location = new Point(800, lblRecommendations.Location.Y);
+            lblLastViewed.Location = new Point(800, lblLastViewed.Location.Y);
+
         }
 
-        private void InitializeTextBoxPlaceholder(TextBox textBox, string placeholder)
+        private void InitializePlaceholder(TextBox textBox, string placeholder)
         {
-            textBox.ForeColor = Color.Gray;
             textBox.Text = placeholder;
+            textBox.ForeColor = Color.Gray;
 
             textBox.GotFocus += (s, e) =>
             {
@@ -50,6 +82,7 @@ namespace WindowsFormApp1
                     textBox.ForeColor = Color.Black;
                 }
             };
+
             textBox.LostFocus += (s, e) =>
             {
                 if (string.IsNullOrWhiteSpace(textBox.Text))
@@ -63,25 +96,22 @@ namespace WindowsFormApp1
         private void DisplayAllEvents()
         {
             lstEvents.Items.Clear();
-            var allSorted = EventRepository.GetAllEventsSorted("Date", true);
-            foreach (var ev in allSorted)
+            var allEvents = EventRepository.GetAllEventsSorted("Date", true);
+            foreach (var ev in allEvents)
                 lstEvents.Items.Add(ev.ToString());
         }
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
             string keyword = txtSearch.Text.Trim();
-            if (keyword == "Search event name...") keyword = ""; // FIX: ignore placeholder
+            if (keyword == "Search events...") keyword = "";
 
             string selectedCategory = cmbCategory.SelectedItem?.ToString() ?? "All Categories";
-            bool useDate = chkUseDate.Checked;
-            DateTime? selectedDate = useDate ? dtDate.Value.Date : (DateTime?)null;
+            DateTime? selectedDate = dtDate.Value.Date;
 
-            var results = EventRepository.SearchEvents(keyword, selectedCategory, selectedDate);
+            bool useDateFilter = chkUseDate.Checked;
 
-            string sortBy = cmbSortBy.SelectedItem?.ToString() ?? "Date";
-            bool ascending = (cmbSortOrder.SelectedItem?.ToString() ?? "Ascending") == "Ascending";
-            results = SortResults(results, sortBy, ascending);
+            var results = EventRepository.SearchEvents(keyword, selectedCategory, selectedDate, useDateFilter);
 
             lstEvents.Items.Clear();
             if (results.Any())
@@ -98,63 +128,25 @@ namespace WindowsFormApp1
             DisplayLastViewed();
         }
 
-        private List<Event> SortResults(List<Event> results, string sortBy, bool ascending)
+        private void btnClearSearch_Click(object sender, EventArgs e)
         {
-            List<Event> sorted;
+            txtSearch.Text = "Search events...";
+            txtSearch.ForeColor = Color.Gray;
+            cmbCategory.SelectedIndex = 0;
+            cmbSortBy.SelectedIndex = 0;
+            cmbSortOrder.SelectedIndex = 0;
+            chkUseDate.Checked = false;
 
-            switch (sortBy.ToLowerInvariant())
-            {
-                case "date":
-                    sorted = ascending ? results.OrderBy(r => r.Date).ToList() : results.OrderByDescending(r => r.Date).ToList();
-                    break;
-                case "title":
-                    sorted = ascending ? results.OrderBy(r => r.Title).ToList() : results.OrderByDescending(r => r.Title).ToList();
-                    break;
-                case "category":
-                    sorted = ascending ? results.OrderBy(r => r.Category).ToList() : results.OrderByDescending(r => r.Category).ToList();
-                    break;
-                default:
-                    sorted = results;
-                    break;
-            }
-
-            return sorted;
-        }
-
-
-        private void DisplayRecommendations()
-        {
-            var recs = EventRepository.GetSmartRecommendations(5);
-            lstRecommendations.Items.Clear();
-            if (recs.Any())
-            {
-                lblRecommendations.Text = "Recommended for you:";
-                foreach (var ev in recs)
-                    lstRecommendations.Items.Add(ev.ToString());
-            }
-            else lblRecommendations.Text = "No recommendations yet.";
-        }
-
-        private void DisplayLastViewed()
-        {
-            lstLastViewed.Items.Clear();
-            var last = EventRepository.GetLastViewed(5);
-            if (last.Any())
-            {
-                lblLastViewed.Text = "Last viewed:";
-                foreach (var ev in last)
-                    lstLastViewed.Items.Add(ev.ToString());
-            }
-            else lblLastViewed.Text = "Last viewed: (none)";
+            DisplayAllEvents();
         }
 
         private void lstEvents_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lstEvents.SelectedIndex == -1) return;
-
             var selectedText = lstEvents.SelectedItem.ToString();
-            var all = EventRepository.EventsByCategory.Values.SelectMany(q => q).ToList();
+            var all = EventRepository.EventsByCategory.Values.SelectMany(q => q);
             var ev = all.FirstOrDefault(x => x.ToString() == selectedText);
+
             if (ev != null)
             {
                 EventRepository.LastViewed.Push(ev);
@@ -165,16 +157,54 @@ namespace WindowsFormApp1
             }
         }
 
+        private void DisplayRecommendations()
+        {
+            var recs = EventRepository.GetSmartRecommendations(5);
+            lstRecommendations.Items.Clear();
+            if (recs.Any())
+            {
+                lblRecommendations.Text = "Recommended Events (based on your searches):";
+                foreach (var ev in recs)
+                    lstRecommendations.Items.Add(ev.ToString());
+            }
+            else
+            {
+                lblRecommendations.Text = "No recommendations yet.";
+            }
+        }
+
+        private void DisplayLastViewed()
+        {
+            lstLastViewed.Items.Clear();
+            var last = EventRepository.GetLastViewed(5);
+            if (last.Any())
+            {
+                lblLastViewed.Text = "Last viewed:";
+                foreach (var ev in last)
+                    lstLastViewed.Items.Add(ev.Title);
+            }
+            else
+            {
+                lblLastViewed.Text = "Last viewed: (none)";
+            }
+        }
+
         private void btnSubmitEvent_Click(object sender, EventArgs e)
         {
             var title = txtNewTitle.Text.Trim();
             var cat = txtNewCategory.Text.Trim();
-            var date = dtNewDate.Value.Date;
             var desc = txtNewDesc.Text.Trim();
+            var date = dtNewDate.Value.Date;
+
+            if (title == "Enter event title..." || cat == "Enter event category..." || desc == "Enter event description...")
+            {
+                MessageBox.Show("Please fill in all fields before submitting.");
+                return;
+            }
 
             if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(cat))
             {
-                MessageBox.Show("Please enter at least a Title and Category.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter both Title and Category.");
                 return;
             }
 
@@ -182,47 +212,35 @@ namespace WindowsFormApp1
             EventRepository.SubmitNewEvent(newEvent);
             UpdateSubmissionQueueCount();
 
-            MessageBox.Show("Event submitted to queue. Click 'Process Submissions' to add it.", "Submitted",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Event added to queue. Click 'Process Submissions' to finalize.", "Submitted", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            txtNewTitle.Clear();
-            txtNewCategory.Clear();
-            txtNewDesc.Clear();
+            // Reset placeholders
+            txtNewTitle.Text = "Enter event title...";
+            txtNewTitle.ForeColor = Color.Gray;
+            txtNewCategory.Text = "Enter event category...";
+            txtNewCategory.ForeColor = Color.Gray;
+            txtNewDesc.Text = "Enter event description...";
+            txtNewDesc.ForeColor = Color.Gray;
         }
 
         private void btnProcessSubmissions_Click(object sender, EventArgs e)
         {
             if (EventRepository.SubmissionQueue.Count == 0)
             {
-                MessageBox.Show("No pending submissions.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("No pending submissions to process.");
                 return;
             }
 
             EventRepository.ProcessSubmissions();
-
-            cmbCategory.Items.Clear();
-            cmbCategory.Items.Add("All Categories");
-            cmbCategory.Items.AddRange(EventRepository.Categories.ToArray());
-            cmbCategory.SelectedIndex = 0;
-
             DisplayAllEvents();
-            DisplayRecommendations();
             UpdateSubmissionQueueCount();
 
-            MessageBox.Show("Processed pending submissions.", "Processed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("All submissions processed successfully.", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void UpdateSubmissionQueueCount()
         {
             lblQueueCount.Text = $"Pending submissions: {EventRepository.SubmissionQueue.Count}";
         }
-
-        private void btnBack_Click(object sender, EventArgs e)
-        {
-            parentForm.ShowWelcomeScreen();
-        }
-
-        private void cmbSortBy_SelectedIndexChanged(object sender, EventArgs e) => btnSearch_Click(null, null);
-        private void cmbSortOrder_SelectedIndexChanged(object sender, EventArgs e) => btnSearch_Click(null, null);
     }
 }

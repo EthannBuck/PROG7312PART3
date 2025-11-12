@@ -1,14 +1,4 @@
-﻿# Municipality Help System
-
-## Overview
-
-The **Municipality Help System** is a **Windows Forms Application** developed using **C#** and **.NET Framework**, designed to streamline the reporting of municipal issues, tracking service requests, and providing real-time community announcements. The system provides an intuitive, user-friendly interface that enables citizens to report issues efficiently while maintaining a structured backend to manage, categorize, and track submissions.  
-
-The application emphasizes usability, accessibility, and a clean visual interface with color-coded sections, interactive navigation, and responsive feedback for users.
-
----
-
-## Features
+﻿## Features
 
 ### User-Facing Features
 - **Report Issues:** Submit issues with detailed fields including `Location`, `Category`, `Description`, and optional images/videos.  
@@ -56,7 +46,7 @@ The system follows a **modular design pattern** with clear separation of concern
 
 - **Setup Instructions:**
   1. Clone or download the repository:  
-     git clone https://github.com/EthannBuck/MunicipalityHelpSystem.git
+     `git clone https://github.com/EthannBuck/MunicipalityHelpSystem.git`
   2. Open the solution file (`.sln`) in Visual Studio.  
   3. Build the solution to restore any dependencies.  
   4. Run the application using `F5` (Start Debugging) or `Ctrl + F5` (Run without Debugging).  
@@ -108,22 +98,24 @@ Contributions are welcome! To contribute:
 
 1. Fork the repository  
 2. Create a feature branch:  
-   git checkout -b feature/new-feature
+   `git checkout -b feature/new-feature`
 3. Commit your changes:  
-   git commit -m 'Add new feature'
+   `git commit -m 'Add new feature'`
 4. Push to the branch:  
-   git push origin feature/new-feature
+   `git push origin feature/new-feature`
 5. Open a pull request for review.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License – see LICENSE
- for details.
+This project is licensed under the MIT License – see LICENSE for details.
 
 ## Author
 
-Ethan Buck
-Computer Application Development Student
+Ethan Buck  
+Computer Application Development Student  
 Email: ST10250745@vcconnect.edu.za
+GitHub: [https://github.com/EthannBuck/MunicipalityHelpSystem.git]
+
+
