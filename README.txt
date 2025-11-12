@@ -46,7 +46,7 @@ The system follows a **modular design pattern** with clear separation of concern
 
 - **Setup Instructions:**
   1. Clone or download the repository:  
-     `git clone https://github.com/EthannBuck/MunicipalityHelpSystem.git`
+     `git clone https://github.com/EthannBuck/PROG7312PART3.git`
   2. Open the solution file (`.sln`) in Visual Studio.  
   3. Build the solution to restore any dependencies.  
   4. Run the application using `F5` (Start Debugging) or `Ctrl + F5` (Run without Debugging).  
